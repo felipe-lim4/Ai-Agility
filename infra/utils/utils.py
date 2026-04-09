@@ -82,6 +82,7 @@ def extract_repository_code(repo_url: str) -> dict:
     tree = _build_tree_paths(repo_path)
     dependencies = _extract_dependencies(repo_path)
     readme_original = _extract_readme_original(repo_path)
+
     file_entries = []
     for file_path in Path(repo_path).rglob("*"):
         if not file_path.is_file():

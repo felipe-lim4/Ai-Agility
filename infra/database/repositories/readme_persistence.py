@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from typing import Any
 
-from sqlalchemy import or_, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from domain.entities.enum.interaction_status import InteractionStatus
@@ -74,7 +74,7 @@ class SQLAlchemyReadmeRepository:
         if tag_ids:
             filters.append(TagModel.id.in_(tag_ids))
         if tag_names:
-            filters.append(TagModel.name.in_(tag_names))
+            filters.append(func.lower(TagModel.name).in_([n.lower() for n in tag_names]))
 
         if not filters:
             return []
@@ -162,6 +162,6 @@ class SQLAlchemyReadmeRepository:
         if model is None:
             return False
 
-        self.db.delete(model)
+        await self.db.delete(model)
         await self.db.commit()
         return True

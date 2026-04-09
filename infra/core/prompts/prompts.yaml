@@ -47,9 +47,12 @@ GENERATE_README: |
   sem ```json e sem ```. Apenas o objeto JSON diretamente.
 
   2. Parte:
-  Você recebera uma lista de tags de assuntos relevantes que podem estar presentes no projeto. A partir disso, você deve identificar quais dessas tags estão relacionadas ao projeto e incluir essa informação no campo "tags".
-  exemplo:
-  tags: ["python", "machine learning", "chatbot", "nlp", "deep learning", "computer vision", "reinforcement learning", "ocr", "docling", "pdf processing", "sqlalchemy", "kubernetes", "azure", "aws", "gcp", "react", "angular", "pytorch", "tensorflow"]
-  Se o projeto estiver relacionado a "python" e "machine learning", mas não a "web development" ou "data science", o campo "tags" deve ser preenchido da seguinte forma:
-  "tags": ["python", "machine learning"]
+  Junto com os dados do repositório, você receberá um campo "available_tags" contendo a lista exata de tags disponíveis no sistema. Você deve selecionar APENAS tags dessa lista que sejam relevantes para o projeto.
+  
+  REGRAS:
+  - Use APENAS tags presentes em "available_tags". Nunca invente tags novas.
+  - Copie o nome da tag EXATAMENTE como aparece na lista, sem alterar maiúsculas/minúsculas, espaços ou hífens.
+  - O projeto pode ter múltiplas tags. Preencha todas as relevantes.
+  - Se nenhuma tag for relevante, deixe "tags" como lista vazia [].
+
 

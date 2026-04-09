@@ -60,15 +60,17 @@ class AzureReadmeProcessRepository(IReadmeProcessRepository):
                     len(result["files"]), len(result["dependencies"]))
         return result
 
-    async def get_response(self, link_origin: str, repo_data: dict) -> ReadmeData:
+    async def get_response(self, link_origin: str, repo_data: dict, available_tags: list[str] | None = None) -> ReadmeData:
         logger.info("[ProcessRepo] Building prompt and calling LLM for: %s", link_origin)
         prompts = build_prompt()
         prompt = prompts[0] if prompts else ""
+
         structured_input = StructuredInput(
             repo_url=link_origin,
             tree=repo_data["tree"],
             dependencies=repo_data["dependencies"],
             readme_original=repo_data.get("readme_original"),
+            available_tags=available_tags or [],
             files=repo_data["files"],
         )
 
@@ -89,6 +91,9 @@ class AzureReadmeProcessRepository(IReadmeProcessRepository):
 
         if not isinstance(response_data, dict):
             raise ValueError("LLM response must be a JSON object.")
+        logger.debug("response data: %s", response_data)
+        print("response data:", response_data)
+        print("tags atribuidas", response_data.get("tags"))
 
         return ReadmeData(
             link_origin=link_origin,

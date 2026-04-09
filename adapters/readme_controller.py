@@ -14,6 +14,7 @@ from application.readme.readme_usecase import (
     GetReadmeByIdUseCase,
     GetReadmesByTagUseCase,
     ListDocumentsUseCase,
+    ListTagsUseCase,
     UpdateReadmeUseCase,
 )
 from domain.entities.readme_entity import ReadmeData
@@ -22,6 +23,7 @@ from infra.dependencies.readme_dependencies import (
     get_delete_readme_use_case,
     get_generate_readme_use_case,
     get_list_documents_use_case,
+    get_list_tags_use_case,
     get_readme_by_id_use_case,
     get_readmes_by_tag_use_case,
     get_update_readme_use_case,
@@ -54,6 +56,14 @@ def _readme_to_response(readme: ReadmeData) -> ReadmeResponse:
 
 
 router = APIRouter(tags=["readme"])
+
+
+@router.get("/tags", response_model=list[TagResponse])
+async def list_tags(
+    use_case: ListTagsUseCase = Depends(get_list_tags_use_case),
+) -> list[TagResponse]:
+    tags = await use_case.execute()
+    return [_tag_to_response(tag) for tag in tags]
 
 
 @router.post("/generate_readme", response_model=GenerateReadmeResponse)

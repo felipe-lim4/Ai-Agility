@@ -9,6 +9,7 @@ class StructuredInput(BaseModel):
     tree: str
     dependencies: list[str]
     readme_original: str | None = None
+    available_tags: list[str] = []
     files: list[dict]
 
 

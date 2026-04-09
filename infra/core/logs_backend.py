@@ -1,5 +1,6 @@
 import logging
 import os
+import sys
 
 class LoggerManager:
     """Gerencia uma instância simples de logger (singleton)."""
@@ -30,7 +31,8 @@ class LoggerManager:
         file_handler.setLevel(logging.INFO)
         file_handler.setFormatter(formatter)
 
-        console_handler = logging.StreamHandler()
+        utf8_stream = open(sys.stdout.fileno(), 'w', encoding='utf-8', closefd=False)
+        console_handler = logging.StreamHandler(utf8_stream)
         console_handler.setLevel(logging.INFO)
         console_handler.setFormatter(formatter)
 
