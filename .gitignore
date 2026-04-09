@@ -3,6 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 *.pyo
+*.pyc
 
 # Virtual environments
 .venv/
@@ -19,17 +20,29 @@ ENV/
 .idea/
 *.swp
 *.swo
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
 
 # Distribution / packaging
 dist/
+dist-ssr/
 build/
 *.egg-info/
 *.egg
 
-# Byte-compiled / optimized
-*.pyc
+# Node.js
+node_modules/
+*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
 # Logs
+logs/
 *.log
 
 # OS
@@ -45,4 +58,5 @@ htmlcov/
 # mypy
 .mypy_cache/
 
+# Database
 persistent.db
