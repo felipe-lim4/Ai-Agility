@@ -35,6 +35,7 @@ class ReadmeResponse(BaseModel):
     project_name: str | None = None
     summary: str | None = None
     description: str | None = None
+    tree: str | None = None
     technologies: list[str]
     features: list[str]
     setup: dict
@@ -52,6 +53,7 @@ class UpdateReadmeRequest(BaseModel):
     project_name: str | None = None
     summary: str | None = None
     description: str | None = None
+    tree: str | None = None
     technologies: list[str] | None = None
     features: list[str] | None = None
     setup: dict | None = None

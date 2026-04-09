@@ -29,6 +29,7 @@ class SQLAlchemyReadmeRepository:
             project_name=model.project_name,
             summary=model.summary,
             description=model.description,
+            tree=model.tree,
             technologies=model.technologies,
             features=model.features,
             setup=model.setup,
@@ -105,12 +106,12 @@ class SQLAlchemyReadmeRepository:
             return None
         return self._to_entity(model)
 
-    async def get_by_tag(self, tag_name: str) -> list[ReadmeData]:
+    async def get_by_tag(self, tag_id: int) -> list[ReadmeData]:
         result = await self.db.execute(
             select(ReadmeModel)
             .join(ReadmeModel.tags)
             .options(selectinload(ReadmeModel.tags))
-            .where(TagModel.name == tag_name)
+            .where(TagModel.id == tag_id)
         )
         models = result.scalars().unique().all()
         return [self._to_entity(model) for model in models]
@@ -121,6 +122,7 @@ class SQLAlchemyReadmeRepository:
             "project_name",
             "summary",
             "description",
+            "tree",
             "technologies",
             "features",
             "setup",

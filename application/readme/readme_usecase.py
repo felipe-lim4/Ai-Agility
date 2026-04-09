@@ -22,6 +22,7 @@ class GenerateReadmeUseCase:
             "project_name": readme.project_name,
             "summary": readme.summary,
             "description": readme.description,
+            "tree": readme.tree,
             "technologies": readme.technologies,
             "features": readme.features,
             "setup": readme.setup,
@@ -43,9 +44,9 @@ class GenerateReadmeUseCase:
 
         try:
             logger.info("[GenerateReadme] Extracting repository texts...")
-            files = await self.readme_process_repository.extract_repository_texts(link_origin)
-            logger.info("[GenerateReadme] Extracted %d files, calling LLM...", len(files))
-            generated_readme = await self.readme_process_repository.get_response(link_origin, files)
+            repo_data = await self.readme_process_repository.extract_repository_texts(link_origin)
+            logger.info("[GenerateReadme] Extracted %d files, calling LLM...", len(repo_data["files"]))
+            generated_readme = await self.readme_process_repository.get_response(link_origin, repo_data)
             generated_readme.status = InteractionStatus.FINISHED
             logger.info("[GenerateReadme] LLM succeeded, updating record id=%d to FINISHED", readme_id)
             await self.readme_repository.update(readme_id, self._to_update_data(generated_readme))
@@ -78,8 +79,8 @@ class GetReadmesByTagUseCase:
     def __init__(self, readme_repository: IReadmeRepository) -> None:
         self.readme_repository = readme_repository
 
-    async def execute(self, tag_name: str) -> list[ReadmeData]:
-        return await self.readme_repository.get_by_tag(tag_name)
+    async def execute(self, tag_id: int) -> list[ReadmeData]:
+        return await self.readme_repository.get_by_tag(tag_id)
 
 
 class UpdateReadmeUseCase:

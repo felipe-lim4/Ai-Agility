@@ -10,6 +10,7 @@ class ReadmeData:
     project_name: str | None = None
     summary: str | None = None
     description: str | None = None
+    tree: str | None = None
     technologies: list[str] = field(default_factory=list)
     features: list[str] = field(default_factory=list)
     setup: dict = field(default_factory=dict)

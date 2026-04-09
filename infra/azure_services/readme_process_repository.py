@@ -7,10 +7,9 @@ from domain.repositories.readme_process_repository import IReadmeProcessReposito
 from infra.azure_services.llm_service import LLMService, StructuredInput
 from infra.core.config import settings
 from infra.core.load_prompts import build_prompt
-from infra.utils.utils import extract_repository_texts
+from infra.utils.utils import extract_repository_code
 
 logger = settings.logger
-
 
 class AzureReadmeProcessRepository(IReadmeProcessRepository):
     def __init__(self, llm_service: LLMService | None = None) -> None:
@@ -42,17 +41,36 @@ class AzureReadmeProcessRepository(IReadmeProcessRepository):
 
         return [tag for item in raw_tags if (tag := cls._parse_tag(item)) is not None]
 
-    async def extract_repository_texts(self, link_origin: str) -> list[dict[str, str]]:
+    @classmethod
+    def _clean_response(cls, response: str) -> str:
+         # Strip markdown code fences if present
+        cleaned = response.strip()
+        if cleaned.startswith("```"):
+            first_newline = cleaned.find("\n")
+            if first_newline != -1:
+                cleaned = cleaned[first_newline + 1:]
+            if cleaned.endswith("```"):
+                cleaned = cleaned[:-3].strip()
+        return cleaned
+
+    async def extract_repository_texts(self, link_origin: str) -> dict:
         logger.info("[ProcessRepo] Cloning and extracting texts from: %s", link_origin)
-        result = await asyncio.to_thread(extract_repository_texts, link_origin)
-        logger.info("[ProcessRepo] Extracted %d files from repository", len(result))
+        result = await asyncio.to_thread(extract_repository_code, link_origin)
+        logger.info("[ProcessRepo] Extracted %d files, %d dependencies from repository",
+                    len(result["files"]), len(result["dependencies"]))
         return result
 
-    async def get_response(self, link_origin: str, files: list[dict[str, str]]) -> ReadmeData:
+    async def get_response(self, link_origin: str, repo_data: dict) -> ReadmeData:
         logger.info("[ProcessRepo] Building prompt and calling LLM for: %s", link_origin)
         prompts = build_prompt()
         prompt = prompts[0] if prompts else ""
-        structured_input = StructuredInput(repo_url=link_origin, files=files)
+        structured_input = StructuredInput(
+            repo_url=link_origin,
+            tree=repo_data["tree"],
+            dependencies=repo_data["dependencies"],
+            readme_original=repo_data.get("readme_original"),
+            files=repo_data["files"],
+        )
 
         response_text = await asyncio.to_thread(
             self.llm_service.get_response_from_azure_openai,
@@ -61,19 +79,12 @@ class AzureReadmeProcessRepository(IReadmeProcessRepository):
         )
         logger.info("[ProcessRepo] LLM raw response:\n%s", response_text[:1000])
 
-        # Strip markdown code fences if present
-        cleaned = response_text.strip()
-        if cleaned.startswith("```"):
-            first_newline = cleaned.find("\n")
-            if first_newline != -1:
-                cleaned = cleaned[first_newline + 1:]
-            if cleaned.endswith("```"):
-                cleaned = cleaned[:-3].strip()
+        response_text = self._clean_response(response_text)
 
         try:
-            response_data = json.loads(cleaned)
+            response_data = json.loads(response_text)
         except json.JSONDecodeError as exc:
-            logger.error("[ProcessRepo] Failed to parse JSON after cleanup: %s", cleaned[:500])
+            logger.error("[ProcessRepo] Failed to parse JSON after cleanup: %s", response_text[:500])
             raise ValueError("LLM response is not valid JSON.") from exc
 
         if not isinstance(response_data, dict):
@@ -84,6 +95,7 @@ class AzureReadmeProcessRepository(IReadmeProcessRepository):
             project_name=response_data.get("project_name"),
             summary=response_data.get("summary"),
             description=response_data.get("description"),
+            tree=response_data.get("tree") or repo_data["tree"],
             technologies=response_data.get("technologies") if isinstance(response_data.get("technologies"), list) else [],
             features=response_data.get("features") if isinstance(response_data.get("features"), list) else [],
             setup=response_data.get("setup") if isinstance(response_data.get("setup"), dict) else {},

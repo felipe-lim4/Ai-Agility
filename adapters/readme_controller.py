@@ -39,6 +39,7 @@ def _readme_to_response(readme: ReadmeData) -> ReadmeResponse:
         project_name=readme.project_name,
         summary=readme.summary,
         description=readme.description,
+        tree=readme.tree,
         technologies=readme.technologies,
         features=readme.features,
         setup=readme.setup,
@@ -85,10 +86,10 @@ async def get_document(
 
 @router.get("/get_documents_by_tag", response_model=list[ReadmeResponse])
 async def get_documents_by_tag(
-    tag: str,
+    tag_id: int,
     use_case: GetReadmesByTagUseCase = Depends(get_readmes_by_tag_use_case),
 ) -> list[ReadmeResponse]:
-    readmes = await use_case.execute(tag)
+    readmes = await use_case.execute(tag_id)
     return [_readme_to_response(readme) for readme in readmes]
 
 

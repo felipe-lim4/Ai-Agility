@@ -6,6 +6,9 @@ logger = settings.logger
 
 class StructuredInput(BaseModel):
     repo_url: str
+    tree: str
+    dependencies: list[str]
+    readme_original: str | None = None
     files: list[dict]
 
 

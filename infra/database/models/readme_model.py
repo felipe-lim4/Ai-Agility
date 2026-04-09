@@ -13,6 +13,7 @@ class ReadmeModel(BaseModel):
     project_name = Column(String, index=True)
     summary = Column(String, index=True)
     description = Column(String, index=True)
+    tree = Column(String, nullable=True)
     technologies = Column(JSON, nullable=False, default=list)
     features = Column(JSON, nullable=False, default=list)
     setup = Column(JSON, nullable=False, default=dict)
