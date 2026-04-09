@@ -14,6 +14,16 @@ export default function ProjectModal({ project, onClose, onDelete }) {
     };
   }, [onClose]);
 
+  function handleDownloadMarkdown() {
+    const blob = new Blob([project.readme || ""], { type: "text/markdown;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${project.name || "README"}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <div
       className="fixed inset-0 bg-black/30 backdrop-blur-[3px] z-[1000] flex items-center justify-center p-6 animate-fade-in max-sm:p-3"
@@ -118,7 +128,17 @@ export default function ProjectModal({ project, onClose, onDelete }) {
           </div>
 
           <div className="flex flex-col overflow-hidden">
-            <h3 className="text-[0.75rem] font-bold text-[#7f6b98] uppercase tracking-[0.08em] m-0 px-5 py-3.5 border-b border-line bg-white shrink-0">README</h3>
+            <div className="flex items-center justify-between px-5 py-3.5 border-b border-line bg-white shrink-0">
+              <h3 className="text-[0.75rem] font-bold text-[#7f6b98] uppercase tracking-[0.08em] m-0">README</h3>
+              <button
+                className="bg-white border border-[#ddcfee] text-[#7f6d97] w-[30px] h-[30px] rounded-[8px] cursor-pointer flex items-center justify-center transition-all duration-150 shrink-0 hover:border-accent hover:text-brand hover:bg-[#f9f4ff]"
+                onClick={handleDownloadMarkdown}
+                aria-label="Baixar README.md"
+                title="Baixar README.md"
+              >
+                <svg className="w-[16px] h-[16px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              </button>
+            </div>
             <div className="readme-prose p-5 overflow-y-auto flex-1 text-[0.88rem] leading-[1.7] text-[#3b2a53]">
               <ReactMarkdown>{project.readme || ""}</ReactMarkdown>
             </div>
