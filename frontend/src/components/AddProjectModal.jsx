@@ -1,25 +1,12 @@
 import { useState } from "react";
-import { mockRepoData } from "../data/mockProjects";
-
-function randomMockData() {
-  return mockRepoData[Math.floor(Math.random() * mockRepoData.length)];
-}
-
-function extractNameFromUrl(url) {
-  try {
-    const parts = url.replace(/\/$/, "").split("/");
-    return parts[parts.length - 1] || "novo-projeto";
-  } catch {
-    return "novo-projeto";
-  }
-}
+import { generateReadme } from "../services/api";
 
 export default function AddProjectModal({ onClose, onAdd }) {
   const [repoUrl, setRepoUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!repoUrl.trim()) {
       setError("Informe o link do repositório.");
@@ -32,22 +19,16 @@ export default function AddProjectModal({ onClose, onAdd }) {
     setError("");
     setLoading(true);
 
-    // Simulate async AI enrichment
-    setTimeout(() => {
-      const mock = randomMockData();
-      const name = extractNameFromUrl(repoUrl);
-      onAdd({
-        id: Date.now(),
-        name,
-        repoUrl: repoUrl.trim(),
-        summary: mock.summary,
-        tags: mock.tags,
-        technologies: mock.technologies,
-        readme: mock.readme.replace(/new-microservice|frontend-portal|analytics-service/g, name),
-      });
-      setLoading(false);
+    try {
+      await generateReadme(repoUrl.trim());
+      onAdd();
       onClose();
-    }, 1800);
+    } catch (err) {
+      setError("Erro ao gerar README. Tente novamente.");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

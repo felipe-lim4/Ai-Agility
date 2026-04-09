@@ -1,8 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { techBadgeStyle } from "../data/techColors";
 
-export default function ProjectModal({ project, onClose }) {
+export default function ProjectModal({ project, onClose, onDelete }) {
+  const [confirming, setConfirming] = useState(false);
   useEffect(() => {
     document.body.style.overflow = "hidden";
     const handleKey = (e) => e.key === "Escape" && onClose();
@@ -39,13 +40,40 @@ export default function ProjectModal({ project, onClose }) {
               </a>
             </div>
           </div>
-          <button
-            className="bg-white border border-[#ddcfee] text-[#7f6d97] w-[34px] h-[34px] rounded-[10px] cursor-pointer text-[0.85rem] flex items-center justify-center transition-all duration-150 shrink-0 hover:border-accent hover:text-brand"
-            onClick={onClose}
-            aria-label="Fechar modal"
-          >
-            ✕
-          </button>
+          <div className="flex items-center gap-2">
+            {confirming ? (
+              <div className="flex items-center gap-1.5">
+                <span className="text-[0.75rem] text-red-600 font-medium">Excluir?</span>
+                <button
+                  className="bg-red-600 text-white border-none px-2.5 py-1 rounded-lg text-[0.75rem] font-semibold cursor-pointer hover:bg-red-700 transition-colors"
+                  onClick={() => onDelete(project.id)}
+                >
+                  Sim
+                </button>
+                <button
+                  className="bg-white border border-[#ddcfee] text-[#7f6d97] px-2.5 py-1 rounded-lg text-[0.75rem] font-semibold cursor-pointer hover:border-accent transition-colors"
+                  onClick={() => setConfirming(false)}
+                >
+                  Não
+                </button>
+              </div>
+            ) : (
+              <button
+                className="bg-white border border-red-300 text-red-500 w-[34px] h-[34px] rounded-[10px] cursor-pointer flex items-center justify-center transition-all duration-150 shrink-0 hover:border-red-400 hover:text-red-600 hover:bg-red-50"
+                onClick={() => setConfirming(true)}
+                aria-label="Excluir projeto"
+              >
+                <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+              </button>
+            )}
+            <button
+              className="bg-white border border-[#ddcfee] text-[#7f6d97] w-[34px] h-[34px] rounded-[10px] cursor-pointer text-[0.85rem] flex items-center justify-center transition-all duration-150 shrink-0 hover:border-accent hover:text-brand"
+              onClick={onClose}
+              aria-label="Fechar modal"
+            >
+              ✕
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-[300px_1fr] overflow-hidden flex-1 min-h-0 max-sm:grid-cols-1 max-sm:grid-rows-[auto_1fr]">
@@ -80,12 +108,19 @@ export default function ProjectModal({ project, onClose }) {
                 ))}
               </div>
             </div>
+
+            {project.tree && (
+              <div className="flex flex-col gap-2">
+                <h3 className="text-[0.72rem] font-bold text-[#8a78a1] uppercase tracking-[0.06em] m-0">Estrutura</h3>
+                <pre className="text-[0.7rem] text-text-soft leading-[1.5] m-0 overflow-x-auto whitespace-pre bg-white/60 rounded-lg p-2.5 border border-line/50">{project.tree}</pre>
+              </div>
+            )}
           </div>
 
           <div className="flex flex-col overflow-hidden">
             <h3 className="text-[0.75rem] font-bold text-[#7f6b98] uppercase tracking-[0.08em] m-0 px-5 py-3.5 border-b border-line bg-white shrink-0">README</h3>
             <div className="readme-prose p-5 overflow-y-auto flex-1 text-[0.88rem] leading-[1.7] text-[#3b2a53]">
-              <ReactMarkdown>{project.readme}</ReactMarkdown>
+              <ReactMarkdown>{project.readme || ""}</ReactMarkdown>
             </div>
           </div>
         </div>

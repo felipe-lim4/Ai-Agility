@@ -1,23 +1,37 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import Header from "./components/Header";
 import SearchBar from "./components/SearchBar";
 import TagFilter from "./components/TagFilter";
 import ProjectCard from "./components/ProjectCard";
 import ProjectModal from "./components/ProjectModal";
 import AddProjectModal from "./components/AddProjectModal";
-import { mockProjects } from "./data/mockProjects";
+import { listDocuments, listTags, deleteDocument, mapBackendToProject } from "./services/api";
 
 export default function App() {
-  const [projects, setProjects] = useState(mockProjects);
+  const [projects, setProjects] = useState([]);
+  const [tags, setTags] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [selectedTags, setSelectedTags] = useState([]);
   const [activeProject, setActiveProject] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
 
-  const tags = useMemo(
-    () => [...new Set(projects.flatMap((p) => p.tags))],
-    [projects]
-  );
+  const fetchProjects = useCallback(async () => {
+    try {
+      setLoading(true);
+      const [docs, tagsData] = await Promise.all([listDocuments(), listTags()]);
+      setProjects(docs.map(mapBackendToProject));
+      setTags(tagsData.map((t) => t.name));
+    } catch (err) {
+      console.error("Erro ao carregar projetos:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchProjects();
+  }, [fetchProjects]);
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
@@ -38,8 +52,8 @@ export default function App() {
     );
   }
 
-  function handleAddProject(project) {
-    setProjects((prev) => [project, ...prev]);
+  function handleAddProject() {
+    fetchProjects();
   }
 
   return (
@@ -49,13 +63,11 @@ export default function App() {
       <main className="w-[92%] max-w-[1800px] mx-auto px-6 pt-[38px] pb-14 max-sm:w-full max-sm:px-4 max-sm:pt-6 max-sm:pb-10">
         <div className="bg-white/72 border border-border-main backdrop-blur-[12px] rounded-[18px] p-[18px] flex gap-3 items-stretch mb-[18px] shadow-sm max-sm:p-3.5 max-sm:flex-col">
             <SearchBar value={search} onChange={setSearch} />
-            {tags.length > 0 && (
-              <TagFilter
-                tags={tags}
-                selected={selectedTags}
-                onToggle={handleTagToggle}
-              />
-            )}
+            <TagFilter
+              tags={tags}
+              selected={selectedTags}
+              onToggle={handleTagToggle}
+            />
             <button
               className="flex items-center gap-1.5 justify-center px-5 py-[11px] bg-brand text-white border border-[rgba(43,18,76,0.35)] rounded-xl text-[0.88rem] font-semibold cursor-pointer whitespace-nowrap shadow-btn transition-all duration-[480ms] ease-out hover:brightness-[1.3] hover:shadow-btn-hover active:translate-y-0 max-sm:w-full max-sm:px-3.5 max-sm:text-[0.85rem]"
               onClick={() => setShowAddModal(true)}
@@ -83,7 +95,12 @@ export default function App() {
           )}
         </div>
 
-        {filtered.length > 0 ? (
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-[70px] px-6 text-center rounded-[18px] border border-dashed border-[#dbcbe9] bg-white/56">
+            <div className="w-10 h-10 border-4 border-[rgba(82,43,91,0.22)] border-t-brand rounded-full animate-spin mb-4" />
+            <p className="text-[0.9rem] text-text-soft m-0">Carregando projetos...</p>
+          </div>
+        ) : filtered.length > 0 ? (
           <div className="grid grid-cols-2 gap-5 max-sm:grid-cols-1">
             {filtered.map((project) => (
               <ProjectCard
@@ -108,6 +125,15 @@ export default function App() {
         <ProjectModal
           project={activeProject}
           onClose={() => setActiveProject(null)}
+          onDelete={async (id) => {
+            try {
+              await deleteDocument(id);
+              setActiveProject(null);
+              fetchProjects();
+            } catch (err) {
+              console.error("Erro ao excluir projeto:", err);
+            }
+          }}
         />
       )}
 

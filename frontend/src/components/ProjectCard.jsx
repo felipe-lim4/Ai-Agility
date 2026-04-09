@@ -30,25 +30,29 @@ export default function ProjectCard({ project, onClick }) {
 
       <p className="text-[0.88rem] text-text-soft leading-relaxed m-0 line-clamp-4">{project.summary}</p>
 
-      <div className="flex flex-col gap-1.5 mt-auto">
-        <span className="text-[0.7rem] font-semibold text-text-soft uppercase tracking-[0.06em]">Tags</span>
-        <div className="flex flex-wrap gap-1.5">
-          {project.tags.map((tag) => (
-            <span key={tag} className="text-[0.77rem] text-brand/70 bg-brand-soft px-3 py-1 rounded-full font-medium">#{tag}</span>
-          ))}
+      {project.tags.length > 0 && (
+        <div className="flex flex-col gap-1.5 mt-auto">
+          <span className="text-[0.7rem] font-semibold text-text-soft uppercase tracking-[0.06em]">Tags</span>
+          <div className="flex flex-wrap gap-1.5">
+            {project.tags.map((tag) => (
+              <span key={tag} className="text-[0.77rem] text-brand/70 bg-brand-soft px-3 py-1 rounded-full font-medium">#{tag}</span>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
       
-      <div className="flex flex-col gap-1.5">
-        <span className="text-[0.7rem] font-semibold text-text-soft uppercase tracking-[0.06em]">Tecnologias</span>
-        <div className="flex flex-wrap gap-1.5">
-          {project.technologies.map((tech) => (
-            <span key={tech} className="text-[0.76rem] font-semibold px-3 py-[5px] rounded-lg border whitespace-nowrap" style={techBadgeStyle(tech)}>
-              {tech}
-            </span>
-          ))}
+      {project.technologies.length > 0 && (
+        <div className="flex flex-col gap-1.5">
+          <span className="text-[0.7rem] font-semibold text-text-soft uppercase tracking-[0.06em]">Tecnologias</span>
+          <div className="flex flex-wrap gap-1.5">
+            {project.technologies.map((tech) => (
+              <span key={tech} className="text-[0.76rem] font-semibold px-3 py-[5px] rounded-lg border whitespace-nowrap" style={techBadgeStyle(tech)}>
+                {tech}
+              </span>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="pt-4 border-t border-line/60 flex items-center justify-between">
         <span className="text-[0.82rem] font-semibold text-brand/60 transition-all duration-200 group-hover:text-brand group-focus:text-brand">Abrir detalhes</span>
